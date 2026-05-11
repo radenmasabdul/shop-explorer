@@ -1,65 +1,70 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
+import type { CartItem, Product } from "../types"
 
-type CartItem = {
-  id: number
-  title: string
-  price: number
-  image: string
-  quantity: number
-}
-
-type CartState = {
+interface CartStore {
   items: CartItem[]
-  addItem: (item: Omit<CartItem, "quantity">) => void
-  removeItem: (id: number) => void
-  increment: (id: number) => void
-  decrement: (id: number) => void
+  addItem: (product: Product) => void
+  removeItem: (productId: number) => void
+  incrementQty: (productId: number) => void
+  decrementQty: (productId: number) => void
+  clearCart: () => void
+  getTotalItems: () => number
+  getSubtotal: () => number
 }
 
-export const useCartStore = create<CartState>()(
+export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
 
-      addItem: (item) => {
-        const items = get().items
-        const existing = items.find((i) => i.id === item.id)
-
-        if (existing) {
-          set({
-            items: items.map((i) =>
-              i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-            ),
-          })
-        } else {
-          set({
-            items: [...items, { ...item, quantity: 1 }],
-          })
-        }
+      addItem: (product) => {
+        set((state) => {
+          const existing = state.items.find((i) => i.product.id === product.id)
+          if (existing) {
+            return {
+              items: state.items.map((i) =>
+                i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+              ),
+            }
+          }
+          return { items: [...state.items, { product, quantity: 1 }] }
+        })
       },
 
-      removeItem: (id) =>
-        set({
-          items: get().items.filter((i) => i.id !== id),
-        }),
+      removeItem: (productId) => {
+        set((state) => ({
+          items: state.items.filter((i) => i.product.id !== productId),
+        }))
+      },
 
-      increment: (id) =>
-        set({
-          items: get().items.map((i) =>
-            i.id === id ? { ...i, quantity: i.quantity + 1 } : i
+      incrementQty: (productId) => {
+        set((state) => ({
+          items: state.items.map((i) =>
+            i.product.id === productId ? { ...i, quantity: i.quantity + 1 } : i
           ),
-        }),
+        }))
+      },
 
-      decrement: (id) =>
-        set({
-          items: get().items.map((i) =>
-            i.id === id && i.quantity > 1
-              ? { ...i, quantity: i.quantity - 1 }
-              : i
-          ),
-        }),
+      decrementQty: (productId) => {
+        set((state) => ({
+          items: state.items
+            .map((i) =>
+              i.product.id === productId ? { ...i, quantity: i.quantity - 1 } : i
+            )
+            .filter((i) => i.quantity > 0),
+        }))
+      },
+
+      clearCart: () => set({ items: [] }),
+
+      getTotalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
+
+      getSubtotal: () =>
+        get().items.reduce((sum, i) => sum + i.product.price * i.quantity, 0),
     }),
-    { name: "cart-storage" }
+    {
+      name: "shop-explorer-cart",
+    }
   )
 )

@@ -165,7 +165,7 @@ export default function ProductDetail() {
                 size="lg"
                 onClick={addToCart}
                 disabled={isPending || isInCart}
-                className={`w-full gap-2 text-base font-semibold ${
+                className={`w-full gap-2 text-base font-semibold cursor-pointer ${
                   isInCart ? "bg-green-600 hover:bg-green-700" : ""
                 }`}
               >

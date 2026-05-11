@@ -1,14 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { ShoppingBag, Store } from "lucide-react";
-
 import { useCartStore } from "@/stores/cart-store";
 
 export default function Navbar() {
   const location = useLocation();
-
-  const totalItems = useCartStore((s) =>
-    s.items.reduce((sum, i) => sum + i.quantity, 0),
-  );
+  const totalItems = useCartStore((s) => s.getTotalItems());
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">

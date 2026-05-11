@@ -12,3 +12,5 @@ export function formatPrice(price: number): string {
     minimumFractionDigits: 2,
   }).format(price)
 }
+
+export const TAX_RATE = 0.1

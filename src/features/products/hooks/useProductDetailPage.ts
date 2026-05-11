@@ -26,7 +26,7 @@ export function useProductDetailPage() {
     ) ?? [];
 
   const isInCart = product
-    ? items.some((item) => item.id === product.id)
+    ? items.some((item) => item.product.id === product.id)
     : false;
 
   const addToCart = async () => {
@@ -35,10 +35,7 @@ export function useProductDetailPage() {
     try {
       setIsPending(true);
 
-      addItem({
-        ...product,
-        image: validImages[0] ?? "",
-      });
+      addItem(product);
 
       await new Promise((resolve) =>
         setTimeout(resolve, 500),
