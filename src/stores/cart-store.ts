@@ -1,0 +1,65 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+type CartItem = {
+  id: number
+  title: string
+  price: number
+  image: string
+  quantity: number
+}
+
+type CartState = {
+  items: CartItem[]
+  addItem: (item: Omit<CartItem, "quantity">) => void
+  removeItem: (id: number) => void
+  increment: (id: number) => void
+  decrement: (id: number) => void
+}
+
+export const useCartStore = create<CartState>()(
+  persist(
+    (set, get) => ({
+      items: [],
+
+      addItem: (item) => {
+        const items = get().items
+        const existing = items.find((i) => i.id === item.id)
+
+        if (existing) {
+          set({
+            items: items.map((i) =>
+              i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+            ),
+          })
+        } else {
+          set({
+            items: [...items, { ...item, quantity: 1 }],
+          })
+        }
+      },
+
+      removeItem: (id) =>
+        set({
+          items: get().items.filter((i) => i.id !== id),
+        }),
+
+      increment: (id) =>
+        set({
+          items: get().items.map((i) =>
+            i.id === id ? { ...i, quantity: i.quantity + 1 } : i
+          ),
+        }),
+
+      decrement: (id) =>
+        set({
+          items: get().items.map((i) =>
+            i.id === id && i.quantity > 1
+              ? { ...i, quantity: i.quantity - 1 }
+              : i
+          ),
+        }),
+    }),
+    { name: "cart-storage" }
+  )
+)
